@@ -9,7 +9,7 @@ from app.models.manager import ManagerORM
 
 security = HTTPBearer()
 
-def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security),
+def get_current_manager(credentials: HTTPAuthorizationCredentials = Depends(security),
                      db: Session = Depends(get_db)) -> ManagerORM:
     
     token = credentials.credentials
@@ -32,7 +32,7 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     
     return user
 
-def get_current_admin(current_user: ManagerORM = Depends(get_current_user)
+def get_current_admin(current_user: ManagerORM = Depends(get_current_manager)
                       ) -> ManagerORM:
     
     if not current_user.is_admin:

@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 from fastapi.params import Depends
 
 from sqlalchemy.orm import Session
-from app.core.auth import get_current_admin, get_current_user
+from app.core.auth import get_current_admin, get_current_manager
 from app.core.security import get_password_hash
 from app.db.session import get_db
 from app.models.manager import ManagerORM
@@ -45,7 +45,7 @@ def create_manager(
 
 @router.get("/me", response_model=ManagerResponse)
 def get_current_manager(
-    current_user: ManagerORM = Depends(get_current_user),
+    current_user: ManagerORM = Depends(get_current_manager),
     ):
 
     return current_user

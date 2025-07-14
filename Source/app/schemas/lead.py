@@ -13,9 +13,20 @@ class LeadBase(BaseModel):
 class LeadCreate(LeadBase):
     pass
 
+class LeadStatusUpdate(BaseModel):
+    status: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "status": "contacted"
+            }
+        }
+
 class Lead(LeadBase):
     id: int
+    status: str
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
