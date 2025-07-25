@@ -1,13 +1,11 @@
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.security import HTTPAuthorizationCredentials
 
+from app.core.security import security
 from app.core.security import verify_token
 from app.db.session import get_db
 from app.models.manager import ManagerORM
-
-
-security = HTTPBearer()
 
 def get_current_manager(credentials: HTTPAuthorizationCredentials = Depends(security),
                      db: Session = Depends(get_db)) -> ManagerORM:

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from dotenv import load_dotenv
+from fastapi.security import HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -45,3 +46,5 @@ def verify_token(token: str) -> Optional[str]:
         return login
     except JWTError:
         return None
+
+security = HTTPBearer()
