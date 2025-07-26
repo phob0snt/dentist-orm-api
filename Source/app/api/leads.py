@@ -5,13 +5,13 @@ from app.models.manager import ManagerORM
 from app.services import lead as lead_service
 
 from app.db.session import get_db
-from app.schemas.lead import Lead, LeadStatusUpdate
+from app.schemas.lead import Lead, LeadCreate, LeadStatusUpdate
 
 
 router = APIRouter(prefix="/leads", tags=["leads"])
 
 @router.post("/", response_model=Lead, status_code=status.HTTP_201_CREATED)
-def create_lead(lead_data = Lead, db: Session = Depends(get_db)):
+def create_lead(lead_data: LeadCreate, db: Session = Depends(get_db)):
     return lead_service.create_lead(lead_data, db)
 
 @router.get("/", response_model=list[Lead])
