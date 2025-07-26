@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from app.schemas.lead import LeadCreate, LeadStatusUpdate
+from app.schemas.lead import LeadCreate, LeadUpdate
 from app.models.lead import LeadORM
 from app.crud import lead as lead_crud
 from sqlalchemy.orm import Session
@@ -22,11 +22,11 @@ def get_lead_by_id(lead_id: int, db: Session) -> LeadORM:
     
     return lead
 
-def update_lead_status(
+def update_lead(
         lead_id: int,
-        status_update: LeadStatusUpdate,
+        lead_update: LeadUpdate,
         db: Session
 ) -> LeadORM:
     lead = lead_crud.get_lead_by_id(lead_id, db)
 
-    return lead_crud.update_lead_status(lead, status_update.status, db)
+    return lead_crud.update_lead(lead, lead_update, db)

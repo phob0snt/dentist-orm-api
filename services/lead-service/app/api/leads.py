@@ -5,7 +5,7 @@ from app.models.manager import ManagerORM
 from app.services import lead as lead_service
 
 from app.db.session import get_db
-from app.schemas.lead import Lead, LeadCreate, LeadStatusUpdate
+from app.schemas.lead import Lead, LeadCreate, LeadUpdate
 
 
 router = APIRouter(prefix="/leads", tags=["leads"])
@@ -30,10 +30,10 @@ def get_lead_by_id(
     return lead_service.get_lead_by_id(lead_id, db)
 
 @router.patch("/{lead_id}", response_model=Lead)
-def update_lead_status(
+def update_lead(
     lead_id: int,
-    status_update: LeadStatusUpdate,
+    lead_update: LeadUpdate,
     db: Session = Depends(get_db),
     _: ManagerORM = Depends(get_current_manager)
 ):
-    return lead_service.update_lead_status(lead_id, status_update, db)
+    return lead_service.update_lead(lead_id, lead_update, db)

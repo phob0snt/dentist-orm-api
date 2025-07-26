@@ -1,6 +1,14 @@
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel
+from enum import Enum
+
+
+class LeadStatus(str, Enum):
+    NEW = "new"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+
 
 class LeadBase(BaseModel):
     full_name: str
@@ -8,24 +16,19 @@ class LeadBase(BaseModel):
     contact_email: Optional[str] = None
     service_type: str
     preferred_date: datetime
+    appointment_date: Optional[datetime]
     comment: Optional[str] = None
 
 class LeadCreate(LeadBase):
     pass
 
-class LeadStatusUpdate(BaseModel):
-    status: str
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "status": "contacted"
-            }
-        }
+class LeadUpdate(BaseModel):
+    status: Optional[LeadStatus] = None
+    appointment_date: Optional[datetime] = None
 
 class Lead(LeadBase):
     id: int
-    status: str
+    status: LeadStatus
     created_at: datetime
 
     class Config:

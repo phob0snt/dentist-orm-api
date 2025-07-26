@@ -1,4 +1,4 @@
-from app.schemas.lead import LeadCreate
+from app.schemas.lead import LeadCreate, LeadUpdate
 from sqlalchemy.orm import Session
 from app.models.lead import LeadORM
 
@@ -17,10 +17,12 @@ def get_all_leads(db: Session) -> list[LeadORM]:
 def get_lead_by_id(lead_id: int, db: Session) -> LeadORM | None:
     return db.query(LeadORM).filter(LeadORM.id == lead_id).first()
 
-def update_lead_status(lead: LeadORM, new_status: str, db: Session):
-    lead.status = new_status
+def update_lead(lead: LeadORM, lead_update: LeadUpdate, db: Session):
+    data = lead_update.model_dump(exclude_unset=True)
+
+    for field, value in data.items:
+        setattr(lead, field, value)
 
     db.commit()
     db.refresh(lead)
-
     return lead

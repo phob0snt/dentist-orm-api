@@ -27,9 +27,7 @@ def get_all_managers(
     return manager_service.get_all_managers(db)
 
 @router.get("/me", response_model=ManagerResponse)
-def get_current_manager(
-    manager: ManagerORM = Depends(get_current_manager)
-):
+def get_current_manager(manager: ManagerORM = Depends(get_current_manager)):
     return manager
 
 @router.get("/{manager_id}", response_model=ManagerResponse)
