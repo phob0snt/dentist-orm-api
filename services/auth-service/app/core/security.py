@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi.security import HTTPBearer
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
@@ -48,3 +49,37 @@ def verify_token(token: str) -> Optional[str]:
         return None
 
 security = HTTPBearer()
+
+async def get_current_user(
+        credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> dict:
+    
+    token = credentials.credentials
+    user_data = await verify_token(token)
+
+    if user_data is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Недействительный токен",
+                            headers={"WWW-Authenticate": "Bearer"})
+
+    if not user_data.get("is_active"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Пользователь неактивен")
+    
+    return user_data
+
+async def get_current_manager(current_user: dict = Depends(get_current_user)) -> dict:
+    role = current_user.get("role")
+    if not role == "manager" and not role == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Недостаточно прав для выполнения этого действия")
+    
+    return current_user
+
+async def get_current_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    
+    if not current_user.get("role") == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Недостаточно прав для выполнения этого действия")
+    
+    return current_user

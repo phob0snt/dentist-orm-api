@@ -1,40 +1,16 @@
 import os
-from datetime import datetime, timedelta
 from typing import Optional
-
 from dotenv import load_dotenv
-from fastapi.security import HTTPBearer
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+
+security = HTTPBearer()
 
 load_dotenv()
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
-if not SECRET_KEY:
-    raise ValueError("JWT_SECRET_KEY не найден в переменных окружения")
-
-ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Проверяет пароль против хеша"""
-    return pwd_context.verify(plain_password, hashed_password)
-
-def get_password_hash(password: str) -> str:
-    """Создает хеш пароля"""
-    return pwd_context.hash(password)
-
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Создает JWT токен"""
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.now() + expires_delta
-    else:
-        expire = datetime.now() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 def verify_token(token: str) -> Optional[str]:
     """Проверяет JWT токен и возвращает логин пользователя"""
@@ -46,5 +22,37 @@ def verify_token(token: str) -> Optional[str]:
         return login
     except JWTError:
         return None
+    
+async def get_current_user(
+        credentials: HTTPAuthorizationCredentials = Depends(security)
+) -> dict:
+    
+    token = credentials.credentials
+    user_data = await verify_token(token)
 
-security = HTTPBearer()
+    if user_data is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Недействительный токен",
+                            headers={"WWW-Authenticate": "Bearer"})
+
+    if not user_data.get("is_active"):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Пользователь неактивен")
+    
+    return user_data
+
+async def get_current_manager(current_user: dict = Depends(get_current_user)) -> dict:
+    role = current_user.get("role")
+    if not role == "manager" and not role == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Недостаточно прав для выполнения этого действия")
+    
+    return current_user
+
+async def get_current_admin(current_user: dict = Depends(get_current_user)) -> dict:
+    
+    if not current_user.get("role") == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Недостаточно прав для выполнения этого действия")
+    
+    return current_user

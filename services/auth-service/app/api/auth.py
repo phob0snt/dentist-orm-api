@@ -5,7 +5,7 @@ from app.db.session import get_db
 from app.models.auth import AuthORM
 from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole
 from app.services import auth as auth_service
-from app.core.auth import get_current_admin, get_current_user
+from app.core.security import get_current_admin, get_current_user
 
 
 router = APIRouter(prefix="/auth", tags=["auth"])
