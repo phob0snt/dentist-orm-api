@@ -44,6 +44,18 @@ def update_account(manager: AuthORM, db: Session, data: dict) -> AuthORM:
 
     return manager
 
-def delete_account(manager: AuthORM, db: Session) -> None:
-    db.delete(manager)
+def enable_account(user: AuthORM, db: Session) -> None:
+    user.is_active = False
+
     db.commit()
+    db.refresh(user)
+
+    return user
+
+def enable_account(user: AuthORM, db: Session) -> None:
+    user.is_active = True
+
+    db.commit()
+    db.refresh(user)
+
+    return user

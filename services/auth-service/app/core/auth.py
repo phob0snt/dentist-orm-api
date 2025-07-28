@@ -5,6 +5,7 @@ from fastapi.security import HTTPAuthorizationCredentials
 from app.core.security import security
 from app.core.security import verify_token
 from app.db.session import get_db
+from app.schemas.auth import AccountRole
 from app.models.auth import AuthORM
 
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security),
@@ -30,11 +31,11 @@ def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(securit
     
     return user
 
-# def get_current_admin(current_user: AuthORM = Depends(get_current_manager)
-#                       ) -> AuthORM:
+def get_current_admin(current_user: AuthORM = Depends(get_current_user)
+                      ) -> AuthORM:
     
-#     if not current_user.is_admin:
-#         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-#                             detail="Недостаточно прав для выполнения этого действия")
+    if current_user.role != AccountRole.ADMIN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Недостаточно прав для выполнения этого действия")
     
-#     return current_user
+    return current_user

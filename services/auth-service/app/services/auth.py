@@ -45,8 +45,11 @@ def register_user(
 
     return account_crud.create_account(register_data, role, db)
 
-def delete_user(account_id: int, db: Session):
-    user = account_crud.get_account_by_id(account_id)
+def get_all_users(db: Session):
+    return account_crud.get_all_accounts(db)
+
+def disable_user(account_id: int, db: Session):
+    user = account_crud.get_account_by_id(account_id, db)
 
     if not user:
         raise HTTPException(
@@ -54,4 +57,15 @@ def delete_user(account_id: int, db: Session):
             detail="Пользователь с таким id не найден"
         )
     
-    return account_crud.delete_account(user, db)
+    return account_crud.disable_account(user, db)
+
+def enable_user(account_id: int, db: Session):
+    user = account_crud.get_account_by_id(account_id, db)
+
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь с таким id не найден"
+        )
+    
+    return account_crud.enable_account(user, db)
