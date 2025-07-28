@@ -3,6 +3,9 @@ from datetime import datetime, timedelta
 from typing import Optional
 
 from dotenv import load_dotenv
+from sqlalchemy.orm import Session
+from app.db.session import get_db
+from app.models.auth import AuthORM
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
@@ -51,34 +54,37 @@ def verify_token(token: str) -> Optional[str]:
 security = HTTPBearer()
 
 async def get_current_user(
-        credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> dict:
+        credentials: HTTPAuthorizationCredentials = Depends(security),
+        db: Session = Depends(get_db),
+) -> AuthORM:
     
     token = credentials.credentials
-    user_data = await verify_token(token)
+    user_login = verify_token(token)
+
+    user_data = db.query(AuthORM).filter(AuthORM.login == user_login).first()
 
     if user_data is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Недействительный токен",
                             headers={"WWW-Authenticate": "Bearer"})
 
-    if not user_data.get("is_active"):
+    if not user_data.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Пользователь неактивен")
     
     return user_data
 
-async def get_current_manager(current_user: dict = Depends(get_current_user)) -> dict:
-    role = current_user.get("role")
-    if not role == "manager" and not role == "admin":
+async def get_current_manager(current_user: AuthORM = Depends(get_current_user)) -> AuthORM:
+    role = current_user.role
+    if role != "manager" and role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Недостаточно прав для выполнения этого действия")
     
     return current_user
 
-async def get_current_admin(current_user: dict = Depends(get_current_user)) -> dict:
+async def get_current_admin(current_user: AuthORM = Depends(get_current_user)) -> AuthORM:
     
-    if not current_user.get("role") == "admin":
+    if current_user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Недостаточно прав для выполнения этого действия")
     

@@ -28,7 +28,7 @@ def authenticate_user(login_data: AccountLogin, db: Session):
         )
     
     token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    token = create_access_token(data={"sub": user.login}, expires_delta=token_expires)
+    token = create_access_token(data={"sub": user.login, "role": user.role}, expires_delta=token_expires)
     
     return Token(access_token=token)
 

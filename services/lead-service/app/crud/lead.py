@@ -20,7 +20,7 @@ def get_lead_by_id(lead_id: int, db: Session) -> LeadORM | None:
 def update_lead(lead: LeadORM, lead_update: LeadUpdate, db: Session):
     data = lead_update.model_dump(exclude_unset=True)
 
-    for field, value in data.items:
+    for field, value in data.items():
         setattr(lead, field, value)
 
     db.commit()

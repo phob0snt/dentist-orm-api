@@ -12,14 +12,20 @@ load_dotenv()
 SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGORITHM")
 
-def verify_token(token: str) -> Optional[str]:
-    """Проверяет JWT токен и возвращает логин пользователя"""
+def verify_token(token: str) -> dict:
+    """Проверяет JWT токен и возвращает логин пользователя и роль"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        login: str = payload.get("sub")
-        if login is None:
+        
+        if payload is None:
             return None
-        return login
+        
+        return payload
+        # login: str = payload.get("sub")
+        # role: str = payload.get("role")
+        # if login is None or role is None:
+        #     return None
+        # return login, role
     except JWTError:
         return None
     
@@ -28,16 +34,12 @@ async def get_current_user(
 ) -> dict:
     
     token = credentials.credentials
-    user_data = await verify_token(token)
+    user_data = verify_token(token)
 
     if user_data is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Недействительный токен",
                             headers={"WWW-Authenticate": "Bearer"})
-
-    if not user_data.get("is_active"):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Пользователь неактивен")
     
     return user_data
 
