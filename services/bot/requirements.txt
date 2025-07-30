@@ -1,0 +1,5 @@
+aiogram==3.*
+httpx
+python-dotenv
+redis
+python-jose[cryptography]==3.3.0
