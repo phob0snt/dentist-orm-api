@@ -23,6 +23,7 @@ class AccountResponce(BaseModel):
     class Config:
         orm_mode = True
 
-class Token(BaseModel):
+class TokenPair(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"

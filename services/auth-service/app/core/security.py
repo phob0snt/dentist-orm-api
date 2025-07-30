@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Literal, Optional
 
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
@@ -35,19 +35,33 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     if expires_delta:
         expire = datetime.now() + expires_delta
     else:
-        expire = datetime.now() + timedelta(minutes=15)
-    to_encode.update({"exp": expire})
+        expire = datetime.now() + timedelta(minutes=30)
+    to_encode.update({"exp": expire, "type": "access"})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
-def verify_token(token: str) -> Optional[str]:
-    """Проверяет JWT токен и возвращает логин пользователя"""
+def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
+    """Создает JWT токен"""
+    to_encode = data.copy()
+    if expires_delta:
+        expire = datetime.now() + expires_delta
+    else:
+        expire = datetime.now() + timedelta(days=30)
+    to_encode.update({"exp": expire, "type": "refresh"})
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
+
+def verify_token(token: str, type: Literal["access", "refresh"]) -> dict:
+    """Проверяет JWT токен и возвращает логин и роль пользователя"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        login: str = payload.get("sub")
-        if login is None:
+        if (payload.get("type") != type):
             return None
-        return login
+        return payload
+        # login: str = payload.get("sub")
+        # if login is None:
+        #     return None
+        # return login
     except JWTError:
         return None
 

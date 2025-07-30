@@ -4,14 +4,15 @@ from dotenv import load_dotenv
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.schemas.auth import AccountCreate, AccountLogin, AccountRole, Token
+from app.models.auth import AuthORM
+from app.schemas.auth import AccountCreate, AccountLogin, AccountRole, TokenPair
 import app.crud.account as account_crud
-from app.core.security import verify_password, create_access_token
+from app.core.security import verify_password, create_access_token, create_refresh_token, verify_token
 
 load_dotenv()
 
 ACCESS_TOKEN_EXPIRE_MINUTES = os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30)
-
+REFRESH_TOKEN_EXPIRE_DAYS = os.getenv("REFRESH_TOKEN_EXPIRE_DAYS", 30)
 
 def authenticate_user(login_data: AccountLogin, db: Session):
     user = account_crud.get_account_by_login(login_data.login, db)
@@ -26,11 +27,49 @@ def authenticate_user(login_data: AccountLogin, db: Session):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Пользователь неактивен"
         )
+
+    return create_token_pair(user)
+
+def refresh_token_pair(refresh_token: str, db: Session):
+    user_data = verify_token(refresh_token, "refresh")
+
+    if not user_data:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Недействительный refresh токен")
     
-    token_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
-    token = create_access_token(data={"sub": user.login, "role": user.role}, expires_delta=token_expires)
+    user = account_crud.get_account_by_login(user_data.get("sub"), db)
+
+    if not user or not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Пользователь не найден или неактивен"
+        )
     
-    return Token(access_token=token)
+    return create_token_pair(user)
+    
+
+def create_token_pair(user: AuthORM):
+    access_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
+    refresh_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
+
+    access_token = create_access_token(
+        data={
+            "sub": user.login,
+            "role": user.role
+        },
+        expires_delta=access_expires
+    )
+
+    refresh_token = create_refresh_token(
+        data={
+            "sub": user.login,
+            "role": user.role
+        },
+        expires_delta=refresh_expires
+    )
+
+    return TokenPair(access_token=access_token, refresh_token=refresh_token)
 
 def register_user(
         register_data: AccountCreate,

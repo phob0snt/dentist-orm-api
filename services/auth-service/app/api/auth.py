@@ -11,10 +11,12 @@ from app.core.security import get_current_admin, get_current_user
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 @router.post("/login")
-def login(login_data: AccountLogin,
-          db: Session = Depends(get_db)
-):
+def login(login_data: AccountLogin, db: Session = Depends(get_db)):
     return auth_service.authenticate_user(login_data, db)
+
+@router.post("/refresh")
+def refresh_token(token: str, db: Session = Depends(get_db)):
+    return auth_service.refresh_token_pair(token, db)
 
 @router.post("/register", response_model=AccountResponce)
 def register_user(register_data: AccountCreate, db: Session = Depends(get_db)):

@@ -25,7 +25,6 @@ if config.config_file_name is not None:
 # from myapp import mymodel
 from app.models.base import Base
 from app.models.lead import LeadORM
-from app.models.manager import ManagerORM
 
 
 # target_metadata = mymodel.Base.metadata

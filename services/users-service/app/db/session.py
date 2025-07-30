@@ -4,7 +4,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from app.models.base import Base
-from app.models.lead import LeadORM
+from app.models.user import UserORM
+
 
 load_dotenv()
 DB_URL = os.getenv("DATABASE_URL")
