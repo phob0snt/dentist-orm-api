@@ -1,7 +1,16 @@
 from pydantic import BaseModel
 
-class User(BaseModel):
-    auth_id: str
+class UserBase(BaseModel):
+    telegram_id: str
     full_name: str
     contact_phone: str
-    telegram_id: str
+
+class UserCreate(UserBase):
+    pass
+
+class UserResponce(UserBase):
+    id: int
+    auth_id: int
+
+    class Config:
+        from_attributes = True

@@ -30,7 +30,7 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Создает JWT токен"""
+    """Создает access токен"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now() + expires_delta
@@ -41,7 +41,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 def create_refresh_token(data: dict, expires_delta: Optional[timedelta] = None):
-    """Создает JWT токен"""
+    """Создает refresh токен"""
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.now() + expires_delta

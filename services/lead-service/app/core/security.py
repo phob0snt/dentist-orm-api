@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 ALGORITHM = os.getenv("JWT_ALGORITHM")
 
 def verify_token(token: str) -> dict:
-    """Проверяет JWT токен и возвращает логин пользователя и роль"""
+    """Проверяет JWT токен и возвращает логин, auth_id и роль"""
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         

@@ -38,7 +38,7 @@ def refresh_token_pair(refresh_token: str, db: Session):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Недействительный refresh токен")
     
-    user = account_crud.get_account_by_login(user_data.get("sub"), db)
+    user = account_crud.get_account_by_login(user_data.get("login"), db)
 
     if not user or not user.is_active:
         raise HTTPException(
@@ -55,7 +55,8 @@ def create_token_pair(user: AuthORM):
 
     access_token = create_access_token(
         data={
-            "sub": user.login,
+            "login": user.login,
+            "auth_id": user.id,
             "role": user.role
         },
         expires_delta=access_expires
@@ -63,7 +64,8 @@ def create_token_pair(user: AuthORM):
 
     refresh_token = create_refresh_token(
         data={
-            "sub": user.login,
+            "login": user.login,
+            "auth_id": user.id,
             "role": user.role
         },
         expires_delta=refresh_expires
