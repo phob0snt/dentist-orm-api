@@ -1,6 +1,5 @@
 import asyncio
 from aiogram import Bot, Dispatcher
-from aiogram.filters import CommandStart
 from config import settings
 from redis_utils.redis_cache import init_cache
 from redis_utils.storage import create_fsm_storage
@@ -19,7 +18,6 @@ async def main():
 
     dp = Dispatcher(storage=redis_storage)
     await dp.start_polling(bot)
-    logger.info("ублюдок работает")
 
 if __name__ == "__main__":
     asyncio.run(main())
