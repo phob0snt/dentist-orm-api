@@ -3,6 +3,7 @@ from aiogram import Bot, Dispatcher
 from config import settings
 from redis_utils.redis_cache import init_cache
 from redis_utils.storage import create_fsm_storage
+from handlers import all_routers
 
 import logging
 
@@ -17,6 +18,10 @@ async def main():
     await init_cache(settings.redis_host, settings.redis_port)
 
     dp = Dispatcher(storage=redis_storage)
+    
+    for router in all_routers:
+        dp.include_router(router)
+
     await dp.start_polling(bot)
 
 if __name__ == "__main__":

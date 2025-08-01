@@ -8,9 +8,9 @@ from app.services import auth as auth_service
 from app.core.security import get_current_admin, get_current_user
 
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(tags=["auth"])
 
-@router.post("/login")
+@router.post("/login", response_model=AccountResponce)
 def login(login_data: AccountLogin, db: Session = Depends(get_db)):
     return auth_service.authenticate_user(login_data, db)
 
@@ -20,7 +20,7 @@ def refresh_token(token: str, db: Session = Depends(get_db)):
 
 @router.post("/register", response_model=AccountResponce)
 def register_user(register_data: AccountCreate, db: Session = Depends(get_db)):
-    return auth_service.register_user(register_data, AccountRole.USER, db)
+    return auth_service.register_user_with_login(register_data, AccountRole.USER, db)
 
 @router.get("/me", response_model=AccountResponce)
 def get_current_user(user: AuthORM = Depends(get_current_user)):

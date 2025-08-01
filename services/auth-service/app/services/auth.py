@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.auth import AuthORM
-from app.schemas.auth import AccountCreate, AccountLogin, AccountRole, TokenPair
+from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole, TokenPair
 import app.crud.account as account_crud
 from app.core.security import verify_password, create_access_token, create_refresh_token, verify_token
 
@@ -28,7 +28,13 @@ def authenticate_user(login_data: AccountLogin, db: Session):
             detail="Пользователь неактивен"
         )
 
-    return create_token_pair(user)
+    return AccountResponce(
+        id=user.id,
+        login=user.login,
+        role=user.role,
+        is_active=user.is_active,
+        token_pair=create_token_pair(user)
+    )
 
 def refresh_token_pair(refresh_token: str, db: Session):
     user_data = verify_token(refresh_token, "refresh")
@@ -85,6 +91,21 @@ def register_user(
             detail="Пользователь с таким логином уже существует")
 
     return account_crud.create_account(register_data, role, db)
+
+def register_user_with_login(
+        register_data: AccountCreate,
+        role: AccountRole,
+        db: Session):
+    
+    user = register_user(register_data, role, db)
+
+    return AccountResponce(
+        id=user.id,
+        login=user.login,
+        role=user.role,
+        is_active=user.is_active,
+        token_pair=create_token_pair(user)
+    )
 
 def get_all_users(db: Session):
     return account_crud.get_all_accounts(db)

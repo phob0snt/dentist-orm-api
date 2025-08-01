@@ -14,7 +14,7 @@ async def save_token(type: Literal["refresh_token", "access_token"], tg_id: int,
     payload = get_token_payload(token=token)
 
     if not payload:
-        print("Неверный refresh токен")
+        print("Неверный токен")
 
     ttl_datetime = datetime(payload.get("exp"))
     now = datetime.now(timezone.utc)

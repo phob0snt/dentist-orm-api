@@ -6,7 +6,7 @@ from app.core.security import get_current_admin, get_current_user
 from app.db.session import get_db
 from app.services import user as user_service
 
-router = APIRouter(prefix="/users", tags=["users"])
+router = APIRouter(tags=["users"])
 
 @router.post('/profile', response_model=UserResponce)
 def create_user_data(

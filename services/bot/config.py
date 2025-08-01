@@ -13,4 +13,7 @@ class Settings(BaseModel):
     jwt_secret: str = os.getenv("JWT_SECRET")
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
 
+    auth_service_url: str = os.getenv("AUTH_SERVICE_URL")
+    users_service_url: str = os.getenv("USERS_SERVICE_URL")
+
 settings = Settings()
