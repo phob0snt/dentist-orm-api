@@ -1,6 +1,8 @@
+from http import HTTPStatus
 import httpx
 from config import settings
-from models.auth import AuthResponce, RegisterRequest, UserResponce
+from schemas.auth import AuthResponce, RegisterRequest, UserResponce
+from schemas.lead import LeadCreate
 
 def get_auth_headers(token: str) -> dict[str, str]:
         return {
@@ -37,7 +39,7 @@ async def register_user(data: RegisterRequest) -> UserResponce:
 
         user_responce.raise_for_status()
         user_result = user_responce.json()
-        
+
         responce = UserResponce(
             id=auth_result.id,
             login=auth_result.login,
@@ -61,3 +63,17 @@ async def login_user(data: dict) -> UserResponce:
         )
         responce.raise_for_status()
         return responce.json()
+    
+async def create_lead(data: LeadCreate) -> bool:
+    async with httpx.AsyncClient() as client:
+        json = data.model_dump_json()
+
+        responce = await client.post(
+            f"{settings.leads_service_url}/",
+            json=json
+        )
+
+        if responce.status_code == HTTPStatus.CREATED:
+             return True
+        
+        return False

@@ -15,5 +15,6 @@ class Settings(BaseModel):
 
     auth_service_url: str = os.getenv("AUTH_SERVICE_URL")
     users_service_url: str = os.getenv("USERS_SERVICE_URL")
+    leads_service_url: str = os.getenv("LEADS_SERVICE_URL")
 
 settings = Settings()

@@ -3,9 +3,9 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
-from models.auth import RegisterRequest
+from schemas.auth import RegisterRequest
 from states.states import RegisterStates
-from keyboards.main import cancel_kb, main_kb
+from services.bot.keyboards.reply import cancel_kb, auth_kb
 from services.api_client import register_user
 
 
@@ -70,4 +70,4 @@ async def get_password(message: Message, state: FSMContext):
 
 async def cancel_registration(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Регистрация отменена", reply_markup=main_kb)
+    await message.answer("Регистрация отменена", reply_markup=auth_kb)

@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from states.states import LoginStates
-from keyboards.main import cancel_kb, main_kb
+from services.bot.keyboards.reply import cancel_kb, auth_kb
 from services.api_client import login_user
 
 
@@ -47,4 +47,4 @@ async def get_password(message: Message, state: FSMContext):
 
 async def cancel_login(message: Message, state: FSMContext):
     await state.clear()
-    await message.answer("Вход отменен", reply_markup=main_kb)
+    await message.answer("Вход отменен", reply_markup=auth_kb)

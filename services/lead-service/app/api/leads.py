@@ -7,7 +7,7 @@ from app.db.session import get_db
 from app.schemas.lead import Lead, LeadCreate, LeadUpdate
 
 
-router = APIRouter(prefix="/leads", tags=["leads"])
+router = APIRouter(tags=["leads"])
 
 @router.post("/", response_model=Lead, status_code=status.HTTP_201_CREATED)
 async def create_lead(lead_data: LeadCreate, db: Session = Depends(get_db)):

@@ -9,3 +9,8 @@ class RegisterStates(StatesGroup):
 class LoginStates(StatesGroup):
     login_login = State()
     login_password = State()
+
+class CreateLeadStates(StatesGroup):
+    lead_service_type = State()
+    lead_preferred_date = State()
+    lead_comment = State()
