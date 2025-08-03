@@ -1,11 +1,11 @@
-from aiogram import F, Router
+from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from schemas.auth import RegisterRequest
 from states.states import RegisterStates
-from services.bot.keyboards.reply import cancel_kb, auth_kb
+from keyboards.reply import cancel_kb, auth_kb, back_to_menu_kb
 from services.api_client import register_user
 
 
@@ -65,7 +65,7 @@ async def get_password(message: Message, state: FSMContext):
     responce = await register_user(register_data)
 
     await message.answer(f"{data['name']}, регистрация успешно завершена! \n" 
-                         f"Ваши данные: {responce}")
+                         f"Ваши данные: {responce}", reply_markup=back_to_menu_kb)
     await state.clear()
 
 async def cancel_registration(message: Message, state: FSMContext):

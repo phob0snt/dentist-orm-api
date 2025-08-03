@@ -24,6 +24,13 @@ menu_kb = ReplyKeyboardMarkup(
     resize_keyboard=True
 )
 
+back_to_menu_kb = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="На главную")]
+    ],
+    resize_keyboard=True
+)
+
 lead_type_kb = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="Гигиена")],

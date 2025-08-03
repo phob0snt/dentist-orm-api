@@ -1,13 +1,13 @@
 from fastapi import APIRouter, status, Depends
 from sqlalchemy.orm import Session
-from app.core.security import get_current_manager
+from app.core.security import get_current_manager, get_current_user
 from app.services import lead as lead_service
 
 from app.db.session import get_db
 from app.schemas.lead import Lead, LeadCreate, LeadUpdate
 
 
-router = APIRouter(tags=["leads"])
+router = APIRouter(prefix="/leads", tags=["leads"])
 
 @router.post("/", response_model=Lead, status_code=status.HTTP_201_CREATED)
 async def create_lead(lead_data: LeadCreate, db: Session = Depends(get_db)):
@@ -27,6 +27,14 @@ async def get_lead_by_id(
     _: dict = Depends(get_current_manager)
 ):
     return lead_service.get_lead_by_id(lead_id, db)
+
+@router.get("/user/{user_id}", response_model=list[Lead])
+async def get_leads_by_user_id(
+    user_id: int,
+    db: Session = Depends(get_db),
+    _: dict = Depends(get_current_user)
+):
+    return lead_service.get_leads_by_user_id(user_id, db)
 
 @router.patch("/{lead_id}", response_model=Lead)
 async def update_lead(

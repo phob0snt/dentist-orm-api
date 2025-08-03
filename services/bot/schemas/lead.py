@@ -5,3 +5,6 @@ class LeadCreate(BaseModel):
     service_type: str
     preferred_date: str
     comment: Optional[str]
+
+class LeadResponce(LeadCreate):
+    appointment_date: str

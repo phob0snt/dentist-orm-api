@@ -33,6 +33,15 @@ class AuthResponce(BaseModel):
     login: str
     token_pair: TokenPair
 
-class UserResponce(AuthResponce):
+class UserData(BaseModel):
+    id: int
+    full_name: str
+    contact_phone: str
+
+class UserResponce(BaseModel):
+    id: int
+    auth_id: int
+    login: str
+    token_pair: TokenPair
     full_name: str
     contact_phone: str

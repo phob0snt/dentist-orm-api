@@ -10,7 +10,7 @@ class Settings(BaseModel):
 
     bot_token: str = os.getenv("BOT_TOKEN")
 
-    jwt_secret: str = os.getenv("JWT_SECRET")
+    jwt_secret: str = os.getenv("JWT_SECRET_KEY")
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
 
     auth_service_url: str = os.getenv("AUTH_SERVICE_URL")

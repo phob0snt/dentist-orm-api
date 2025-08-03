@@ -11,6 +11,7 @@ class LeadStatus(str, Enum):
 
 
 class LeadBase(BaseModel):
+    user_id: int
     service_type: str
     preferred_date: datetime
     appointment_date: Optional[datetime]

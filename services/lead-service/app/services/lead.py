@@ -22,6 +22,17 @@ def get_lead_by_id(lead_id: int, db: Session) -> LeadORM:
     
     return lead
 
+def get_leads_by_user_id(user_id: int, db: Session) -> LeadORM:
+    leads = lead_crud.get_leads_by_user_id(user_id, db)
+
+    if not leads:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Leads not found"
+        )
+    
+    return leads
+
 def update_lead(
         lead_id: int,
         lead_update: LeadUpdate,

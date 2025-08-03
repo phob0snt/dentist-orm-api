@@ -15,6 +15,7 @@ class LeadORM(Base):
     __tablename__ = 'leads'
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, index=True)
     service_type = Column(String)
     preferred_date = Column(DateTime)
     appointment_date = Column(DateTime, nullable=True)

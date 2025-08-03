@@ -4,16 +4,12 @@ from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
-from keyboards.reply import lead_type_kb, cancel_kb, skip_kb
+from keyboards.reply import lead_type_kb, cancel_kb, skip_kb, back_to_menu_kb
 from schemas.lead import LeadCreate
 from states.states import CreateLeadStates
 from services.api_client import create_lead
 
 router = Router()
-
-@router.message(lambda m: m.text == "Записаться на прием")
-async def create_lead_button_handler(message: Message, state: FSMContext):
-    await start_lead_creation(message, state)
 
 @router.message(Command("createLead"))
 async def start_lead_creation(message: Message, state: FSMContext):
@@ -40,7 +36,7 @@ async def get_preferred_date(message: Message, state: FSMContext):
         await message.answer("Неверный формат времени. Попробуйте ещё раз (например: 25.12 14:30)")
         return
     
-    await state.update_data(preferred_date=preferred_date)
+    await state.update_data(preferred_date=datetime.strftime(preferred_date))
     await message.answer("Введите дополнительный комментарий / описание проблемы", reply_markup=skip_kb)
     await state.set_state(CreateLeadStates.lead_comment)
 
@@ -60,6 +56,15 @@ async def get_comment(message: Message, state: FSMContext):
     )
     
     if await create_lead(lead):
-        await message.answer("Заявка успешно создана")
+        await message.answer(
+            "🎉 **Заявка создана успешно!**\n\n"
+            f"🦷 Услуга: {data.get('service_type')}\n"
+            f"📅 Желаемое время: {data.get('preferred_date')}\n"
+            f"📝 Комментарий: {comment}\n"
+            f"📞 Мы свяжемся с вами для уточнения времени и деталей.\n"
+            f"Спасибо за обращение!",
+            reply_markup=back_to_menu_kb,
+            parse_mode="Markdown"
+        )
     else:
         await message.answer("Произошла ошибка, заявка не была создана")

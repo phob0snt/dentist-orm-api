@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
 from states.states import LoginStates
-from services.bot.keyboards.reply import cancel_kb, auth_kb
+from keyboards.reply import cancel_kb, auth_kb
 from services.api_client import login_user
 
 

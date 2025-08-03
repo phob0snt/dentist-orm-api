@@ -40,7 +40,7 @@ async def get_current_user(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail="Недействительный токен",
                             headers={"WWW-Authenticate": "Bearer"})
-    
+        
     return user_data
 
 async def get_current_manager(current_user: dict = Depends(get_current_user)) -> dict:
