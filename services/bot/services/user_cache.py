@@ -20,8 +20,9 @@ async def get_user_data_cached(tg_id: int) -> UserData:
     from redis_utils.cache import redis_user_cache
     cached_profile = await redis_user_cache.get(key)
 
-    if user_data := UserData.model_validate(json.loads(cached_profile)):
-        return user_data
+    if cached_profile:
+        if user_data := UserData.model_validate(json.loads(cached_profile)):
+            return user_data
     
     return await get_user_data(tg_id)
 

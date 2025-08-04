@@ -14,7 +14,7 @@ class LeadBase(BaseModel):
     user_id: int
     service_type: str
     preferred_date: datetime
-    appointment_date: Optional[datetime]
+    appointment_date: Optional[datetime] = None
     comment: Optional[str] = None
 
 class LeadCreate(LeadBase):

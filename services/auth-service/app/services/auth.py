@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models.auth import AuthORM
-from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole, TokenPair
+from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole, RefreshRequest, TokenPair
 import app.crud.account as account_crud
 from app.core.security import verify_password, create_access_token, create_refresh_token, verify_token
 
@@ -36,8 +36,8 @@ def authenticate_user(login_data: AccountLogin, db: Session):
         token_pair=create_token_pair(user)
     )
 
-def refresh_token_pair(refresh_token: str, db: Session):
-    user_data = verify_token(refresh_token, "refresh")
+def refresh_token_pair(refresh_token: RefreshRequest, db: Session) -> TokenPair:
+    user_data = verify_token(refresh_token.refresh_token, "refresh")
 
     if not user_data:
         raise HTTPException(
@@ -55,7 +55,7 @@ def refresh_token_pair(refresh_token: str, db: Session):
     return create_token_pair(user)
     
 
-def create_token_pair(user: AuthORM):
+def create_token_pair(user: AuthORM) -> TokenPair:
     access_expires = timedelta(minutes=int(ACCESS_TOKEN_EXPIRE_MINUTES))
     refresh_expires = timedelta(days=int(REFRESH_TOKEN_EXPIRE_DAYS))
 

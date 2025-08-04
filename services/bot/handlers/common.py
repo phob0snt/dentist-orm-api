@@ -7,7 +7,7 @@ from keyboards.reply import auth_kb, menu_kb
 from schemas.auth import UserData
 from services.user_cache import get_user_data_cached, get_leads_cached
 
-from .lead import start_lead_creation
+from .lead import show_leads, start_lead_creation
 from .register import start_registration
 from .login import start_login
 
@@ -24,7 +24,7 @@ async def start_handler(message: Message):
 async def show_main_page(message: Message):
     user_data: UserData = await get_user_data_cached(message.from_user.id)
     leads = await get_leads_cached(message.from_user.id)
-    leads_count = leads.count() if leads else 0
+    leads_count = len(leads) if leads else 0
 
     await message.answer(
         f"Добро пожаловать, {user_data.full_name}! \n"
@@ -43,6 +43,10 @@ async def login_button_handler(message: Message, state: FSMContext):
 @router.message(lambda m: m.text == "Записаться на прием")
 async def create_lead_button_handler(message: Message, state: FSMContext):
     await start_lead_creation(message, state)
+
+@router.message(lambda m: m.text == "Мои записи")
+async def show_leads_button_handler(message: Message):
+    await show_leads(message)
 
 @router.message(lambda m: m.text == "На главную")
 async def create_lead_button_handler(message: Message):

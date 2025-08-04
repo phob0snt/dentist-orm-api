@@ -19,6 +19,9 @@ class TokenPair(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
 
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
 class AccountResponce(BaseModel):
     id: int
     login: str

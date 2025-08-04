@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.models.auth import AuthORM
-from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole
+from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole, RefreshRequest, TokenPair
 from app.services import auth as auth_service
 from app.core.security import get_current_admin, get_current_user
 
@@ -14,9 +14,9 @@ router = APIRouter(tags=["auth"])
 def login(login_data: AccountLogin, db: Session = Depends(get_db)):
     return auth_service.authenticate_user(login_data, db)
 
-@router.post("/refresh")
-def refresh_token(token: str, db: Session = Depends(get_db)):
-    return auth_service.refresh_token_pair(token, db)
+@router.post("/refresh", response_model=TokenPair)
+def refresh_token(payload: RefreshRequest, db: Session = Depends(get_db)):
+    return auth_service.refresh_token_pair(payload, db)
 
 @router.post("/register", response_model=AccountResponce)
 def register_user(register_data: AccountCreate, db: Session = Depends(get_db)):
