@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 
 from keyboards.reply import lead_type_kb, cancel_kb, skip_kb, back_to_menu_kb
 from schemas.lead import LeadCreate
+from utils.decorators import require_auth
 from services.user_cache import get_leads_cached, get_user_data_cached
 from states.states import CreateLeadStates
 from services.api_client import create_lead
@@ -13,6 +14,7 @@ from services.api_client import create_lead
 router = Router()
 
 @router.message(Command("createLead"))
+@require_auth(redirect_to_auth=True)
 async def start_lead_creation(message: Message, state: FSMContext):
     await message.answer("Выберите услугу", reply_markup=lead_type_kb, parse_mode="Markdown")
     await state.set_state(CreateLeadStates.lead_service_type)

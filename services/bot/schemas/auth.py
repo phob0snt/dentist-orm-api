@@ -20,6 +20,7 @@ class RegisterRequest(BaseModel):
         }
 
 class LoginRequest(BaseModel):
+    telegram_id: str = Field(..., description="Telegram ID")
     login: str = Field(..., min_length=6, description="Логин")
     password: str = Field(..., min_length=6, description="Пароль")
 

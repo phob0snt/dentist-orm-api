@@ -3,6 +3,8 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
+from schemas.auth import LoginRequest
+from .common import show_main_page
 from states.states import LoginStates
 from keyboards.reply import cancel_kb, auth_kb
 from services.api_client import login_user
@@ -33,15 +35,17 @@ async def get_password(message: Message, state: FSMContext):
     
     data = await state.get_data()
     
-    login_data = {
-        "login": data["login"],
-        "password": message.text
-    }
+    login_data = LoginRequest(
+        telegram_id=message.from_user.id,
+        login = data["login"],
+        password =  message.text
+    )
 
     responce = await login_user(login_data)
-
-    await message.answer(f"{dict(responce).get('login')}, вход успешно завершен! \n" 
-                         f"Ваши данные: {responce}")
+    if responce:
+        await show_main_page(message)
+    else:
+        await message.answer("❌ Не удалось авторизоваться. Попробуйте заново", reply_markup=auth_kb)
     await state.clear()
 
 

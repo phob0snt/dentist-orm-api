@@ -6,6 +6,7 @@ from aiogram.fsm.context import FSMContext
 from keyboards.reply import auth_kb, menu_kb
 from schemas.auth import UserData
 from services.user_cache import get_user_data_cached, get_leads_cached
+from utils.decorators import require_auth
 
 from .lead import show_leads, start_lead_creation
 from .register import start_registration
@@ -20,7 +21,19 @@ async def start_handler(message: Message):
     "Зарегистрируйтесь или войдите в свой аккаунт для доступа к услугам нашей стоматологии",
     reply_markup=auth_kb)
 
+@router.message(Command("auth"))
+async def show_auth_menu(message: Message, error_message: str = None):
+    if error_message:
+        text = f"{error_message}\n\n"
+    text += (
+        "Для использования бота необходимо войти в систему.\n\n"
+        "• 🔐 **Войти** - если у вас уже есть аккаунт\n"
+        "• 📝 **Регистрация** - создать новый аккаунт\n"
+    )
+    await message.answer(text, reply_markup=auth_kb)
+
 @router.message(Command("main"))
+@require_auth(redirect_to_auth=True)
 async def show_main_page(message: Message):
     user_data: UserData = await get_user_data_cached(message.from_user.id)
     leads = await get_leads_cached(message.from_user.id)
@@ -41,13 +54,16 @@ async def login_button_handler(message: Message, state: FSMContext):
     await start_login(message, state)
 
 @router.message(lambda m: m.text == "Записаться на прием")
+@require_auth(redirect_to_auth=True)
 async def create_lead_button_handler(message: Message, state: FSMContext):
     await start_lead_creation(message, state)
 
 @router.message(lambda m: m.text == "Мои записи")
+@require_auth(redirect_to_auth=True)
 async def show_leads_button_handler(message: Message):
     await show_leads(message)
 
 @router.message(lambda m: m.text == "На главную")
+@require_auth(redirect_to_auth=True)
 async def create_lead_button_handler(message: Message):
     await show_main_page(message)
