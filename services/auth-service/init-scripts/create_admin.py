@@ -1,7 +1,20 @@
-import getpass
+import os
+import sys
+
+
+sys.path.append('/app')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+import os
 from app.db.session import SessionLocal
 from app.models.auth import AuthORM
 from app.core.security import get_password_hash
+from dotenv import load_dotenv
+
+load_dotenv()
+
+login = os.getenv("ADMIN_LOGIN", "admin")
+password = os.getenv("ADMIN_PASSWORD", "admin123")
 
 def create_admin():
     db = SessionLocal()
@@ -12,31 +25,6 @@ def create_admin():
         if existing_admin is not None:
             print(f"Админ уже существует: {existing_admin.login}")
             return existing_admin
-        
-        print("Создание администратора")
-        print("-" * 40)
-
-        login = input("Логин: ").strip()
-
-        if not login:
-            print("Логин не может быть пустым!")
-            return None
-        
-        password = getpass.getpass("Пароль: ").strip()
-
-        if not password:
-            print("Пароль не может быть пустым!")
-            return None
-        
-        password_confirm = getpass.getpass("Подтвердите пароль: ").strip()
-
-        if password != password_confirm:
-            print("Пароли должны совпадать")
-            return None
-        
-        if (len(password) < 6):
-            print("Пароль должен содержать не менее 6 символов")
-            return None
         
         admin = AuthORM(
             login = login,

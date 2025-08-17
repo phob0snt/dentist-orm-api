@@ -1,10 +1,10 @@
 from aiogram import Router
-from aiogram.types import Message
 from aiogram.filters import Command
+from aiogram.types import Message
+
 from aiogram.fsm.context import FSMContext
 
 from schemas.auth import LoginRequest
-from .common import show_main_page
 from states.states import LoginStates
 from keyboards.reply import cancel_kb, auth_kb
 from services.api_client import login_user
@@ -43,6 +43,7 @@ async def get_password(message: Message, state: FSMContext):
 
     responce = await login_user(login_data)
     if responce:
+        from .common import show_main_page
         await show_main_page(message)
     else:
         await message.answer("❌ Не удалось авторизоваться. Попробуйте заново", reply_markup=auth_kb)

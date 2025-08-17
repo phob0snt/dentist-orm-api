@@ -1,0 +1,122 @@
+version: '3.9'
+services:
+  auth-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${AUTH_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${AUTH_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: ${AUTH_SERVICE_DB_NAME}
+    ports:
+      - "${AUTH_SERVICE_DB_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AUTH_SERVICE_DB_USER} -d ${AUTH_SERVICE_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  auth:
+    build: ./auth-service
+    ports:
+      - "${AUTH_SERVICE_EXTERNAL_PORT}:${AUTH_SERVICE_INTERNAL_PORT}"
+    environment:
+      DB_HOST: auth-db
+      DB_PORT: 5432
+      DB_NAME: ${AUTH_SERVICE_DB_NAME}
+      DB_USER: ${AUTH_SERVICE_DB_USER}
+      DB_PASSWORD: ${AUTH_SERVICE_DB_PASSWORD}
+      ADMIN_LOGIN: "admin"
+      ADMIN_PASSWORD: "admin1234"
+    depends_on:
+      auth-db:
+        condition: service_healthy
+    volumes:
+      - ./auth-service/init-scripts:/app/init-scripts
+  lead-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${LEAD_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${LEAD_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: ${LEAD_SERVICE_DB_NAME}
+    ports:
+      - "${LEAD_SERVICE_DB_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${LEAD_SERVICE_DB_USER} -d ${LEAD_SERVICE_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  lead:
+    build: ./lead-service
+    ports:
+      - "${LEAD_SERVICE_EXTERNAL_PORT}:${LEAD_SERVICE_INTERNAL_PORT}"
+    environment:
+      DB_HOST: lead-db
+      DB_PORT: 5432
+      DB_NAME: ${LEAD_SERVICE_DB_NAME}
+      DB_USER: ${LEAD_SERVICE_DB_USER}
+      DB_PASSWORD: ${LEAD_SERVICE_DB_PASSWORD}
+    depends_on:
+      lead-db:
+        condition: service_healthy
+    volumes:
+      - ./lead-service/init-scripts:/app/init-scripts
+  users-db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${USERS_SERVICE_DB_USER}
+      POSTGRES_PASSWORD: ${USERS_SERVICE_DB_PASSWORD}
+      POSTGRES_DB: ${USERS_SERVICE_DB_NAME}
+    ports:
+      - "${USERS_SERVICE_DB_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${USERS_SERVICE_DB_USER} -d ${USERS_SERVICE_DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  users:
+    build: ./users-service
+    ports:
+      - "${USERS_SERVICE_EXTERNAL_PORT}:${USERS_SERVICE_INTERNAL_PORT}"
+    environment:
+      DB_HOST: users-db
+      DB_PORT: 5432
+      DB_NAME: ${USERS_SERVICE_DB_NAME}
+      DB_USER: ${USERS_SERVICE_DB_USER}
+      DB_PASSWORD: ${USERS_SERVICE_DB_PASSWORD}
+    depends_on:
+      users-db:
+        condition: service_healthy
+    volumes:
+      - ./users-service/init-scripts:/app/init-scripts
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+      start_period: 5s
+      timeout: 5s
+      disable: false
+  bot:
+    build: ./bot
+    environment:
+      AUTH_SERVICE_HOST: auth
+      AUTH_SERVICE_PORT: ${AUTH_SERVICE_INTERNAL_PORT}
+      LEAD_SERVICE_HOST: lead
+      LEAD_SERVICE_PORT: ${LEAD_SERVICE_INTERNAL_PORT}
+      USERS_SERVICE_HOST: users
+      USERS_SERVICE_PORT: ${USERS_SERVICE_INTERNAL_PORT}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    depends_on:
+      auth:
+        condition: service_started
+      lead:
+        condition: service_started
+      users:
+        condition: service_started
+      redis:
+        condition: service_healthy

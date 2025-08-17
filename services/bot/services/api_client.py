@@ -122,7 +122,7 @@ async def create_lead(tg_id: int, data: LeadCreate) -> bool:
         json = data.model_dump(mode="json")
 
         responce = await client.post(
-            f"{settings.leads_service_url}/",
+            f"{settings.lead_service_url}/",
             json=json
         )
         
@@ -147,7 +147,7 @@ async def get_leads(tg_id: int) -> list[LeadResponce] | None:
             
 
             responce = await client.get(
-                f"{settings.leads_service_url}/user/{user_id}",
+                f"{settings.lead_service_url}/user/{user_id}",
                 headers=get_auth_headers(access_token)
             )
 
