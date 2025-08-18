@@ -95,7 +95,7 @@ def register_user(
 def register_user_with_login(
         register_data: AccountCreate,
         role: AccountRole,
-        db: Session):
+        db: Session) -> AccountResponce:
     
     user = register_user(register_data, role, db)
 

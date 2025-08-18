@@ -6,10 +6,17 @@ load_dotenv()
 
 AUTH_HOST = os.getenv("AUTH_SERVICE_HOST")
 AUTH_PORT = os.getenv("AUTH_SERVICE_PORT")
+
 USERS_HOST = os.getenv("USERS_SERVICE_HOST")
 USERS_PORT = os.getenv("USERS_SERVICE_PORT")
+
 LEAD_HOST = os.getenv("LEAD_SERVICE_HOST")
 LEAD_PORT = os.getenv("LEAD_SERVICE_PORT")
+
+RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
+RABBITMQ_USER = os.getenv("RABBITMQ_USER")
+RABBITMQ_PASS = os.getenv("RABBITMQ_PASSWORD")
+RABBITMQ_PORT = os.getenv("RABBITMQ_PORT")
 
 class Settings(BaseModel):
     redis_host: str = os.getenv("REDIS_HOST")
@@ -28,5 +35,7 @@ class Settings(BaseModel):
 
 
     lead_service_url: str = f"http://{LEAD_HOST}:{LEAD_PORT}/api/leads"
+
+    rabbitmq_url: str = f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:{RABBITMQ_PORT}/"
 
 settings = Settings()

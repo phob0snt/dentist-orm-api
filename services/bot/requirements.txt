@@ -1,5 +1,6 @@
 aiogram==3.*
 httpx
+aio_pika
 python-dotenv
 redis
 python-jose[cryptography]==3.3.0

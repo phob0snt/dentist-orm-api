@@ -3,10 +3,11 @@ from aiogram.types import Message
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 
+from services.rpc_client import rpc_client
 from schemas.auth import RegisterRequest
 from states.states import RegisterStates
 from keyboards.reply import cancel_kb, auth_kb, back_to_menu_kb
-from services.api_client import register_user
+from services.auth_rpc import register_user
 
 
 router = Router()
@@ -63,9 +64,10 @@ async def get_password(message: Message, state: FSMContext):
     )
 
     responce = await register_user(register_data)
+    #responce = await register_user(register_data)
 
-    await message.answer(f"{data['name']}, регистрация успешно завершена! \n" 
-                         f"Ваши данные: {responce}", reply_markup=back_to_menu_kb)
+    await message.answer(f"{data['name']}, регистрация успешно завершена!",
+                         reply_markup=back_to_menu_kb)
     await state.clear()
 
 async def cancel_registration(message: Message, state: FSMContext):

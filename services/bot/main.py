@@ -6,6 +6,7 @@ from redis_utils.tokens import init_cache as init_token_cache
 from redis_utils.cache import init_cache as init_user_cache
 from redis_utils.fsm import create_fsm_storage
 from handlers import all_routers
+from services.rpc_client import rpc_client
 
 import logging
 bot = Bot(token=settings.bot_token)
@@ -23,6 +24,8 @@ async def main():
     logger.info("✅ Redis подключен")
 
     dp = Dispatcher(storage=redis_storage)
+
+    await rpc_client.connect()
 
     logger.info(f"📋 Найдено роутеров: {len(all_routers)}")
     
