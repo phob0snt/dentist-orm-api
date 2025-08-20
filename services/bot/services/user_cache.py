@@ -2,6 +2,7 @@ import json
 from schemas.lead import LeadResponce
 from schemas.auth import UserData
 from .api_client import get_leads, get_user_data
+from . import user_rpc
 from redis_utils.config import redis_ttl_config
 
 async def get_leads_cached(tg_id: int) -> list[LeadResponce]:
@@ -15,7 +16,7 @@ async def get_leads_cached(tg_id: int) -> list[LeadResponce]:
     
     return await get_leads(tg_id)
 
-async def get_user_data_cached(tg_id: int) -> UserData:
+async def get_user_data_cached(tg_id: int, fromRPC = False) -> UserData:
     key = f"{tg_id}:profile"
     from redis_utils.cache import redis_user_cache
     cached_profile = await redis_user_cache.get(key)
@@ -24,7 +25,10 @@ async def get_user_data_cached(tg_id: int) -> UserData:
         if user_data := UserData.model_validate(json.loads(cached_profile)):
             return user_data
     
-    return await get_user_data(tg_id)
+    if not fromRPC:
+        return await get_user_data(tg_id)
+    else:
+        return await user_rpc.get_user_data(tg_id)
 
 async def cache_leads(tg_id: int, leads: list[LeadResponce]):
     key = f"{tg_id}:leads"

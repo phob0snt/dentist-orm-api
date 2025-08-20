@@ -7,8 +7,8 @@ from typing import Any, Dict
 import aio_pika
 from aio_pika.patterns import RPC
 
-from app.schemas.auth import AccountCreate, AccountResponce, AccountRole
-from .auth import register_user_with_login
+from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole
+from .auth import authenticate_user, refresh_token_pair, register_user_with_login
 from app.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
@@ -27,6 +27,8 @@ class AuthConsumer:
             self.rpc = await RPC.create(self.channel)
 
             await self.rpc.register("auth.register_user", self.handle_register, auto_delete=True)
+            await self.rpc.register("auth.login", self.handle_login, auto_delete=True)
+            await self.rpc.register("auth.refresh", self.handle_refresh, auto_delete=True)
 
             logger.info("Auth RPC Consumer подключен")
 
@@ -67,6 +69,73 @@ class AuthConsumer:
             return {"error": error}
         except Exception as e:
             error = f"Ошибка регистрации: {str(e)}"
+            logger.error(error)
+            return {"error": error}
+        finally:
+            db.close()
+
+    async def handle_login(self, **kwargs) -> Dict[str, Any]:
+        db = SessionLocal()
+
+        try:
+            request = AccountLogin.model_validate(kwargs.get("data"))
+
+            result = authenticate_user(
+                login_data=request,
+                db=db
+            )
+
+            # responce = AccountResponce.model_validate(result)
+
+            return {
+                "id": result.id,
+                "login": result.login,
+                "role": str(result.role.value),
+                "is_active": result.is_active,
+                "token_pair": {
+                    "access_token": result.token_pair.access_token,
+                    "refresh_token": result.token_pair.refresh_token,
+                    "token_type": result.token_pair.token_type
+                }
+            }
+        
+        except ValueError as e:
+            error = f"Ошибка валидации данных: {str(e)}"
+            logger.error(error)
+            return {"error": error}
+        except Exception as e:
+            error = f"Ошибка входа: {str(e)}"
+            logger.error(error)
+            return {"error": error}
+        finally:
+            db.close()
+
+    async def handle_refresh(self, **kwargs) -> Dict[str, Any]:
+        db = SessionLocal()
+
+        try:
+            token = kwargs.get("refresh_token")
+
+            if not token:
+                return { "error": "Refresh токен не предоставлен"}
+
+            result = refresh_token_pair(
+                refresh_token=token,
+                db=db
+            )
+
+            # responce = AccountResponce.model_validate(result)
+
+            return {
+                "token_pair": {
+                    "access_token": result.access_token,
+                    "refresh_token": result.refresh_token,
+                    "token_type": result.token_type
+                }
+            }
+        
+        except Exception as e:
+            error = f"Ошибка обновления токенов: {str(e)}"
             logger.error(error)
             return {"error": error}
         finally:

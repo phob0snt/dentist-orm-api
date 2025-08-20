@@ -5,7 +5,10 @@ from aiogram.fsm.context import FSMContext
 
 from keyboards.reply import auth_kb, menu_kb
 from schemas.auth import UserData
+from services.auth_rpc import refresh_token_pair
+from utils.jwt import validate_token
 from services.user_cache import get_user_data_cached, get_leads_cached
+from redis_utils.tokens import get_token
 from utils.decorators import require_auth
 
 from .lead import show_leads, start_lead_creation
@@ -17,7 +20,20 @@ router = Router()
 
 @router.message(CommandStart())
 async def start_handler(message: Message):
-    await message.answer("Добро пожаловать в Dentist!" \
+    user_id = message.from_user.id
+
+    access_token = await get_token("access_token", user_id)
+    if access_token:
+        if validate_token(access_token):
+            await show_main_page(message)
+            return
+    refresh_token = await get_token("refresh_token", user_id)
+    if refresh_token:
+        if await refresh_token_pair(user_id, refresh_token):
+            await show_main_page(message)
+            return
+    
+    await message.answer("Добро пожаловать в Dentist!\n" \
     "Зарегистрируйтесь или войдите в свой аккаунт для доступа к услугам нашей стоматологии",
     reply_markup=auth_kb)
 

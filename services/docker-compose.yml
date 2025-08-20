@@ -8,6 +8,8 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: default
       RABBITMQ_DEFAULT_PASS: default
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "status"]
       interval: 5s
@@ -22,6 +24,8 @@ services:
       POSTGRES_DB: ${AUTH_SERVICE_DB_NAME}
     ports:
       - "${AUTH_SERVICE_DB_PORT}:5432"
+    volumes:
+      - auth_pg_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${AUTH_SERVICE_DB_USER} -d ${AUTH_SERVICE_DB_NAME}"]
       interval: 10s
@@ -59,6 +63,8 @@ services:
       POSTGRES_DB: ${LEAD_SERVICE_DB_NAME}
     ports:
       - "${LEAD_SERVICE_DB_PORT}:5432"
+    volumes:
+      - lead_pg_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${LEAD_SERVICE_DB_USER} -d ${LEAD_SERVICE_DB_NAME}"]
       interval: 10s
@@ -88,6 +94,8 @@ services:
       POSTGRES_DB: ${USERS_SERVICE_DB_NAME}
     ports:
       - "${USERS_SERVICE_DB_PORT}:5432"
+    volumes:
+      - users_pg_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${USERS_SERVICE_DB_USER} -d ${USERS_SERVICE_DB_NAME}"]
       interval: 10s
@@ -119,6 +127,9 @@ services:
     image: redis:latest
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/var/lib/redis
+    command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -150,3 +161,10 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+
+volumes:
+  rabbitmq_data:
+  auth_pg_data:
+  lead_pg_data:
+  users_pg_data:
+  redis_data:

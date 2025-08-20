@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from redis.asyncio import Redis
 
-from services.jwt_decoder import get_token_payload
+from utils.jwt import get_token_payload
 
 redis_token_cache: Redis | None = None
 
@@ -22,10 +22,11 @@ async def save_token(type: Literal["refresh_token", "access_token"], tg_id: int,
 
     await redis_token_cache.set(f"{type}:{tg_id}", token, ex=ttl_seconds)
 
-async def get_token(type: Literal["refresh_token", "access_token"], tg_id: int) -> str:
+async def get_token(type: Literal["refresh_token", "access_token"], tg_id: int) -> str | None:
     token = await redis_token_cache.get(f"{type}:{tg_id}")
 
     if not token:
         print(f"Токен пользователя {tg_id} не найден")
+        return None
 
     return token

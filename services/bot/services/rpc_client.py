@@ -48,6 +48,16 @@ class RpcClient:
         except Exception as e:
             logger.error(f"Ошибка вызова users сервиса: {e}")
 
+    async def call_lead_service(self, method: str, data: dict) -> dict:
+        if not self._connected:
+            raise RuntimeError("RPC клиент не подключен")
+        
+        try:
+            result = await self.rpc.call(f"lead.{method}", data)
+            return result
+        except Exception as e:
+            logger.error(f"Ошибка вызова users сервиса: {e}")
+
 import config
 
 rpc_client = RpcClient(config.settings.rabbitmq_url)

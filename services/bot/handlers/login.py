@@ -36,7 +36,7 @@ async def get_password(message: Message, state: FSMContext):
     data = await state.get_data()
     
     login_data = LoginRequest(
-        telegram_id=message.from_user.id,
+        telegram_id=str(message.from_user.id),
         login = data["login"],
         password =  message.text
     )
