@@ -6,28 +6,29 @@ from typing import Any, Dict
 import aio_pika
 from aio_pika.patterns import RPC
 
-from app.schemas.user import UserCreate, UserResponce
-from .user import create_user_data, get_user_data
+from app.schemas.lead import LeadCreate, Lead
+from app.config import RabbitMQConfig
+from .lead import create_lead, get_leads_by_user_id
 from app.db.session import SessionLocal
 from app.core.security import verify_token
 
 logger = logging.getLogger(__name__)
 
-class UsersConsumer:
-    def __init__(self, amqp_url: str):
-        self.amqp_url = amqp_url
-        self.connection = None
-        self.channel = None
-        self.rpc = None
+class LeadRpc:
+    def __init__(self, config: RabbitMQConfig):
+        self.config = config
+        self.connection: aio_pika.Connection = None
+        self.channel: aio_pika.Channel = None
+        self.rpc: aio_pika.patterns.RPC = None
 
     async def connect(self):
         try:
-            self.connection = await aio_pika.connect_robust(self.amqp_url)
+            self.connection = await aio_pika.connect_robust(self.config.amqp_url)
             self.channel = await self.connection.channel()
             self.rpc = await RPC.create(self.channel)
 
-            await self.rpc.register("users.create", self.handle_creation, auto_delete=True)
-            await self.rpc.register("users.get", self.handle_get, auto_delete=True)
+            await self.rpc.register("lead.create", self.handle_creation, auto_delete=True)
+            await self.rpc.register("lead.get_for_user", self.handle_get_for_user, auto_delete=True)
 
             logger.info("Auth RPC Consumer подключен")
 
@@ -44,17 +45,16 @@ class UsersConsumer:
             if not token:
                 return {"error": "Отсутствует токен"}
             
-            payload = verify_token(token)
+            verify_token(token)
 
-            request = UserCreate.model_validate(kwargs.get("data"))
+            request = LeadCreate.model_validate(kwargs.get("data"))
 
-            result = create_user_data(
-                user=request,
-                auth_id=payload.get("auth_id"),
+            result = create_lead(
+                lead_data=request,
                 db=db
             )
 
-            responce = UserResponce.model_validate(result)
+            responce = Lead.model_validate(result)
 
             return responce.model_dump()
         
@@ -69,23 +69,27 @@ class UsersConsumer:
         finally:
             db.close()
 
-    async def handle_get(self, **kwargs) -> Dict[str, Any]:
+    async def handle_get_for_user(self, **kwargs) -> Dict[str, Any]:
         db = SessionLocal()
 
         try:
             token = kwargs.get("token")
+            user_id = kwargs.get("user_id")
 
             if not token:
                 return {"error": "Отсутствует токен"}
             
-            payload = verify_token(token)
+            if not user_id:
+                return {"error": "Отсутствует user_id"}
+            
+            verify_token(token)
 
-            result = get_user_data(
-                token_payload=payload,
+            result = get_leads_by_user_id(
+                user_id=user_id,
                 db=db
             )
 
-            responce = UserResponce.model_validate(result)
+            responce = Lead.model_validate(result)
 
             return responce.model_dump()
         
@@ -94,7 +98,7 @@ class UsersConsumer:
             logger.error(error)
             return {"error": error}
         except Exception as e:
-            error = f"Ошибка получения данных пользователя: {str(e)}"
+            error = f"Ошибка регистрации: {str(e)}"
             logger.error(error)
             return {"error": error}
         finally:
@@ -115,11 +119,4 @@ class UsersConsumer:
         finally:
             await self.disconnect()
 
-load_dotenv()
-
-RABBITMQ_HOST = os.getenv("RABBITMQ_HOST")
-RABBITMQ_USER = os.getenv("RABBITMQ_USER")
-RABBITMQ_PASS = os.getenv("RABBITMQ_PASSWORD")
-RABBITMQ_PORT = os.getenv("RABBITMQ_PORT")
-
-users_consumer = UsersConsumer(f"amqp://{RABBITMQ_USER}:{RABBITMQ_PASS}@{RABBITMQ_HOST}:{RABBITMQ_PORT}/")
+lead_consumer = LeadRpc(RabbitMQConfig())

@@ -49,3 +49,13 @@ def get_user_data_by_tg(tg_id: str, db: Session):
         )
     
     return user
+
+def get_tg_by_user_id(user_id: int, db: Session):
+    tg_id = user_crud.get_tg_by_user_id(user_id, db)
+    if not tg_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Пользователь не найден"
+        )
+    
+    return tg_id

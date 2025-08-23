@@ -7,6 +7,7 @@ from redis_utils.cache import init_cache as init_user_cache
 from redis_utils.fsm import create_fsm_storage
 from handlers import all_routers
 from services.rpc_client import rpc_client
+from services.notification_consumer import consumer
 
 import logging
 bot = Bot(token=settings.bot_token)
@@ -25,6 +26,8 @@ async def main():
 
     dp = Dispatcher(storage=redis_storage)
 
+    consumer_task = asyncio.create_task(consumer.run())
+
     await rpc_client.connect()
 
     logger.info(f"📋 Найдено роутеров: {len(all_routers)}")
@@ -32,7 +35,10 @@ async def main():
     for router in all_routers:        
         dp.include_router(router)
 
-    await dp.start_polling(bot)
+    try:
+        await dp.start_polling(bot)
+    finally:
+        consumer_task.cancel()
     
 
 if __name__ == "__main__":

@@ -1,8 +1,22 @@
+import logging
+import sys
 from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
+
 from app.schemas.lead import LeadCreate, LeadUpdate
 from app.models.lead import LeadORM
 from app.crud import lead as lead_crud
-from sqlalchemy.orm import Session
+from .notification_producer import producer
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+logging.basicConfig(
+    level=logging.DEBUG, 
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
 
 
 def create_lead(lead_data: LeadCreate, db: Session) -> LeadORM:
@@ -33,11 +47,22 @@ def get_leads_by_user_id(user_id: int, db: Session) -> LeadORM:
     
     return leads
 
-def update_lead(
+async def update_lead(
         lead_id: int,
         lead_update: LeadUpdate,
         db: Session
 ) -> LeadORM:
     lead = lead_crud.get_lead_by_id(lead_id, db)
+    lead_status = lead.status
 
-    return lead_crud.update_lead(lead, lead_update, db)
+    result = lead_crud.update_lead(lead, lead_update, db)
+    logger.info(f"Updating lead {lead_status} {lead_update.status}")
+    if lead_status != lead_update.status.value:
+        body = {
+            "lead_id": lead.id,
+            "user_id": lead.user_id,
+            "status": lead_update.status
+        }
+        await producer.publish(body)
+
+    return result

@@ -7,7 +7,7 @@ from typing import Any, Dict
 import aio_pika
 from aio_pika.patterns import RPC
 
-from app.schemas.auth import AccountCreate, AccountLogin, AccountResponce, AccountRole
+from app.schemas.auth import AccountCreate, AccountLogin, AccountRole, RefreshRequest
 from .auth import authenticate_user, refresh_token_pair, register_user_with_login
 from app.db.session import SessionLocal
 
@@ -120,7 +120,7 @@ class AuthConsumer:
                 return { "error": "Refresh токен не предоставлен"}
 
             result = refresh_token_pair(
-                refresh_token=token,
+                refresh_token=RefreshRequest(refresh_token=token),
                 db=db
             )
 

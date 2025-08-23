@@ -81,8 +81,14 @@ services:
       DB_NAME: ${LEAD_SERVICE_DB_NAME}
       DB_USER: ${LEAD_SERVICE_DB_USER}
       DB_PASSWORD: ${LEAD_SERVICE_DB_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: default
+      RABBITMQ_PASSWORD: default
+      RABBITMQ_PORT: 5672
     depends_on:
       lead-db:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     volumes:
       - ./lead-service/init-scripts:/app/init-scripts
@@ -161,6 +167,18 @@ services:
         condition: service_started
       redis:
         condition: service_healthy
+  notification:
+    build: ./notification-service
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: default
+      RABBITMQ_PASSWORD: default
+      RABBITMQ_PORT: 5672
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      bot:
+        condition: service_started
 
 volumes:
   rabbitmq_data:

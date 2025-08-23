@@ -73,9 +73,9 @@ async def get_current_user(
 ) -> AuthORM:
     
     token = credentials.credentials
-    user_login = verify_token(token)
+    payload = verify_token(token, 'access')
 
-    user_data = db.query(AuthORM).filter(AuthORM.login == user_login).first()
+    user_data = db.query(AuthORM).filter(AuthORM.login == payload.get("login")).first()
 
     if user_data is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,

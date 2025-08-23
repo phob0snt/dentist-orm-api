@@ -98,7 +98,7 @@ async def refresh_token_pair(tg_id: int, refresh_token: str) -> TokenPair:
         }
     )
 
-    if tokens := TokenPair.model_validate(responce):
+    if tokens := TokenPair.model_validate(responce["token_pair"]):
         await save_token('access_token', tg_id, tokens.access_token)
         await save_token('refresh_token', tg_id, tokens.refresh_token)
     return tokens

@@ -43,4 +43,4 @@ async def update_lead(
     db: Session = Depends(get_db),
     _: dict = Depends(get_current_manager)
 ):
-    return lead_service.update_lead(lead_id, lead_update, db)
+    return await lead_service.update_lead(lead_id, lead_update, db)

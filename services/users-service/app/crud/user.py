@@ -27,3 +27,6 @@ def get_user_data(auth_id: int, db: Session) -> UserORM | None:
 
 def get_user_data_by_tg(tg_id: str, db: Session) -> UserORM | None:
     return db.query(UserORM).filter(UserORM.telegram_id == tg_id).first()
+
+def get_tg_by_user_id(user_id: int, db: Session) -> int | None:
+    return int(db.query(UserORM).filter(UserORM.id == user_id).first().telegram_id)

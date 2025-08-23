@@ -1,3 +1,3 @@
-from .users_consumer import users_consumer
+from .users_rpc import users_rpc
 
-__all__ = users_consumer
+__all__ = users_rpc

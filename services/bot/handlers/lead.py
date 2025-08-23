@@ -63,10 +63,10 @@ async def get_comment(message: Message, state: FSMContext):
     if await create_lead(message.from_user.id, lead):
         await message.answer(
             "🎉 **Заявка создана успешно!**\n\n"
-            f"🦷 Услуга: {data.get('service_type')}\n"
-            f"📅 Желаемое время: {data.get('preferred_date')}\n"
-            f"📝 Комментарий: {comment}\n"
-            f"📞 Мы свяжемся с вами для уточнения времени и деталей.\n"
+            f"🦷 Услуга: {data.get('service_type')}\n\n"
+            f"📅 Желаемое время: {data.get('preferred_date')}\n\n"
+            f"📝 Комментарий: {comment}\n\n"
+            f"📞 Мы свяжемся с вами для уточнения времени и деталей."
             f"Спасибо за обращение!",
             reply_markup=back_to_menu_kb,
             parse_mode="Markdown"

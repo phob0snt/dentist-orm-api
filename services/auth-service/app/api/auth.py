@@ -34,7 +34,7 @@ def register_manager(
 ):    
     return auth_service.register_user(register_data, AccountRole.MANAGER, db)
 
-@router.get("/admin/users", response_model=list[AccountResponce])
+@router.get("/admin/users")
 def get_all_users(
     _: AuthORM = Depends(get_current_admin),
     db: Session = Depends(get_db)
