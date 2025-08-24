@@ -1,9 +1,3 @@
-import os
-import sys
-
-
-sys.path.append('/app')
-
 from app.db.session import create_tables
 
 def init_database():

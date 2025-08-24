@@ -10,6 +10,8 @@ COPY . .
 
 RUN chmod +x init-scripts/run-init.sh
 
+ENV PYTHONPATH=/app
+
 EXPOSE 8003
 
 ENTRYPOINT ["init-scripts/run-init.sh"]

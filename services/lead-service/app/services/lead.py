@@ -63,6 +63,9 @@ async def update_lead(
             "user_id": lead.user_id,
             "status": lead_update.status
         }
+        if lead_update.appointment_date:
+            body["appointment_date"] = lead_update.appointment_date.isoformat()
+            
         await producer.publish(body)
 
     return result

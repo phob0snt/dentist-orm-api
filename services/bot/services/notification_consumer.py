@@ -52,7 +52,11 @@ class Consumer:
                 notification = BotMessage.model_validate(data)
 
                 from main import bot
-                await bot.send_message(notification.chat_id, notification.message)
+                await bot.send_message(
+                    chat_id=notification.chat_id,
+                    text=notification.message,
+                    parse_mode="MarkdownV2"
+                )
 
             except Exception as e:
                 logger.error(f"Ошибка при получении уведомления: {e}")
