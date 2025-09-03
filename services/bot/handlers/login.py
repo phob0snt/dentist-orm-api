@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from schemas.auth import LoginRequest
 from states.states import LoginStates
 from keyboards.reply import cancel_kb, auth_kb
-from services.api_client import login_user
+from services.auth_rpc import login_user
 
 
 router = Router()

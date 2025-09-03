@@ -8,7 +8,7 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-RUN chmod +x init-scripts/run-init.sh
+RUN chmod +x /init-scripts/run-init.sh
 
 ENV PYTHONPATH=/app
 

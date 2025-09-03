@@ -87,10 +87,13 @@ async def show_leads(message: Message):
     message_text = "Ваши записи:\n\n"
     for lead in leads:
         preferred_date = datetime.fromisoformat(lead.preferred_date)
+        appointment_date = None
+        if lead.appointment_date:
+            appointment_date = datetime.fromisoformat(lead.appointment_date)
         message_text += (
             f"Тип услуги: {lead.service_type}\n"
             f"Желаемое время: {preferred_date.strftime('%d.%m в %H:%M')}\n"
-            f"Время записи: {lead.appointment_date if lead.appointment_date else 'Не уточнено'}\n"
+            f"Время записи: {appointment_date.strftime('%d.%m в %H:%M') if appointment_date else 'Не уточнено'}\n"
             f"Комментарий: {lead.comment}\n\n"
         )
 

@@ -6,7 +6,7 @@ class LeadNotification(BaseModel):
     lead_id: int
     user_id: int
     status: Optional[str]
-    appointment_date: Optional[str]
+    appointment_date: Optional[str] = None
 
 class BotMessage(BaseModel):
     chat_id: str

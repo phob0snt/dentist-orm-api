@@ -9,7 +9,7 @@ services:
       RABBITMQ_DEFAULT_USER: default
       RABBITMQ_DEFAULT_PASS: default
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - ./db-data/rabbitmq:/var/lib/rabbitmq
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "status"]
       interval: 5s
@@ -25,7 +25,7 @@ services:
     ports:
       - "${AUTH_SERVICE_DB_PORT}:5432"
     volumes:
-      - auth_pg_data:/var/lib/postgresql/data
+      - ./db-data/auth:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${AUTH_SERVICE_DB_USER} -d ${AUTH_SERVICE_DB_NAME}"]
       interval: 10s
@@ -33,7 +33,7 @@ services:
       retries: 5
       start_period: 30s
   auth:
-    build: ./auth-service
+    build: ./services/auth-service
     ports:
       - "${AUTH_SERVICE_EXTERNAL_PORT}:${AUTH_SERVICE_INTERNAL_PORT}"
     environment:
@@ -54,7 +54,7 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ./auth-service/init-scripts:/app/init-scripts
+      - ./services/auth-service/init-scripts:/app/init-scripts
   lead-db:
     image: postgres:17
     environment:
@@ -64,7 +64,7 @@ services:
     ports:
       - "${LEAD_SERVICE_DB_PORT}:5432"
     volumes:
-      - lead_pg_data:/var/lib/postgresql/data
+      - ./db-data/lead:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${LEAD_SERVICE_DB_USER} -d ${LEAD_SERVICE_DB_NAME}"]
       interval: 10s
@@ -72,7 +72,7 @@ services:
       retries: 5
       start_period: 30s
   lead:
-    build: ./lead-service
+    build: ./services/lead-service
     ports:
       - "${LEAD_SERVICE_EXTERNAL_PORT}:${LEAD_SERVICE_INTERNAL_PORT}"
     environment:
@@ -91,7 +91,7 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ./lead-service/init-scripts:/app/init-scripts
+      - ./services/lead-service/init-scripts:/app/init-scripts
   users-db:
     image: postgres:17
     environment:
@@ -101,7 +101,7 @@ services:
     ports:
       - "${USERS_SERVICE_DB_PORT}:5432"
     volumes:
-      - users_pg_data:/var/lib/postgresql/data
+      - ./db-data/users:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${USERS_SERVICE_DB_USER} -d ${USERS_SERVICE_DB_NAME}"]
       interval: 10s
@@ -109,7 +109,7 @@ services:
       retries: 5
       start_period: 30s
   users:
-    build: ./users-service
+    build: ./services/users-service
     ports:
       - "${USERS_SERVICE_EXTERNAL_PORT}:${USERS_SERVICE_INTERNAL_PORT}"
     environment:
@@ -128,13 +128,13 @@ services:
       rabbitmq:
         condition: service_healthy
     volumes:
-      - ./users-service/init-scripts:/app/init-scripts
+      - ./services/users-service/init-scripts:/app/init-scripts
   redis:
     image: redis:latest
     ports:
       - "6379:6379"
     volumes:
-      - redis_data:/var/lib/redis
+      - ./db-data/redis:/var/lib/redis
     command: ["redis-server", "--appendonly", "yes"]
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -144,7 +144,9 @@ services:
       timeout: 5s
       disable: false
   bot:
-    build: ./bot
+    build: ./services/bot
+    ports:
+      - "${BOT_EXTERNAL_PORT}:${BOT_INTERNAL_PORT}"
     environment:
       AUTH_SERVICE_HOST: auth
       AUTH_SERVICE_PORT: ${AUTH_SERVICE_INTERNAL_PORT}
@@ -168,7 +170,9 @@ services:
       redis:
         condition: service_healthy
   notification:
-    build: ./notification-service
+    build: ./services/notification-service
+    ports:
+      - "${NOTIFICATION_SERVICE_EXTERNAL_PORT}:${NOTIFICATION_SERVICE_INTERNAL_PORT}"
     environment:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: default

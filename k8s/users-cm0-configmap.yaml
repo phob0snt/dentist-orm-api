@@ -1,0 +1,37 @@
+apiVersion: v1
+data:
+  init_db.py: |
+    import os
+    import sys
+
+
+    from app.db.session import create_tables
+
+    def init_database():
+        """Инициализирует базу данных, создавая все таблицы"""
+        create_tables()
+
+    if __name__ == "__main__":
+        init_database()
+  run-init.sh: |-
+    #!/bin/bash
+    set -e
+
+    FLAG_FILE="/app/.initialized"
+
+    if [ -f "$FLAG_FILE" ]; then
+        echo "Инициализация уже была выполнена"
+    else
+        echo "Создание таблиц"
+        python /app/init-scripts/init_db.py
+
+        touch "$FLAG_FILE"
+        echo "Инициализация выполнена"
+    fi
+
+    exec "$@"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: users
+  name: users-cm0

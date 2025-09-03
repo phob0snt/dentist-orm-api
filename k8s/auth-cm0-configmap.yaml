@@ -1,0 +1,38 @@
+apiVersion: v1
+data:
+  create_admin.py: "import os\nfrom app.db.session import SessionLocal\nfrom app.models.auth import AuthORM\nfrom app.core.security import get_password_hash\nfrom dotenv import load_dotenv\n\nload_dotenv()\n\nlogin = os.getenv(\"ADMIN_LOGIN\", \"admin\")\npassword = os.getenv(\"ADMIN_PASSWORD\", \"admin123\")\n\ndef create_admin():\n    db = SessionLocal()\n\n    try:\n        existing_admin = db.query(AuthORM).filter(AuthORM.role == \"admin\").first()\n\n        if existing_admin is not None:\n            print(f\"Админ уже существует: {existing_admin.login}\")\n            return existing_admin\n        \n        admin = AuthORM(\n            login = login,\n            password_hash = get_password_hash(password),\n            role = \"admin\"\n        )\n\n        db.add(admin)\n        db.commit()\n        db.refresh(admin)\n\n        print(f\"Админ успешно создан: {login}\")\n\n    except Exception as e:\n        print(f\"Ошибка при создании админа: {e}\")\n        db.rollback()\n        raise\n\n    finally:\n        db.close()\n\nif (__name__) == \"__main__\":\n    create_admin()"
+  init_db.py: |
+    from app.db.session import create_tables
+
+    def init_database():
+        """Инициализирует базу данных, создавая все таблицы"""
+        create_tables()
+
+    if __name__ == "__main__":
+        init_database()
+  run-init.sh: |-
+    #!/bin/bash
+    set -e
+
+    FLAG_FILE="/app/.initialized"
+
+    if [ -f "$FLAG_FILE" ]; then
+        echo "Инициализация уже была выполнена"
+    else
+        echo "Создание таблиц"
+        python /app/init-scripts/init_db.py
+
+        echo "Создание админа"
+        python /app/init-scripts/create_admin.py
+
+        touch "$FLAG_FILE"
+
+        echo "Инициализация выполнена"
+    fi
+
+    exec "$@"
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: auth
+  name: auth-cm0
