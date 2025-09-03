@@ -9,7 +9,7 @@ from schemas.lead import LeadCreate
 from utils.decorators import require_auth
 from services.user_cache import get_leads_cached, get_user_data_cached
 from states.states import CreateLeadStates
-from services.api_client import create_lead
+from services.lead_rpc import create_lead
 
 router = Router()
 
@@ -51,7 +51,7 @@ async def get_comment(message: Message, state: FSMContext):
         comment = message.text
     
     data = await state.get_data()
-    user_data = await get_user_data_cached(message.from_user.id)
+    user_data = await get_user_data_cached(message.from_user.id, True)
 
     lead = LeadCreate(
         user_id=user_data.id,
@@ -78,7 +78,7 @@ async def get_comment(message: Message, state: FSMContext):
 
 @router.message(Command("showLeads"))
 async def show_leads(message: Message):
-    leads = await get_leads_cached(message.from_user.id)
+    leads = await get_leads_cached(message.from_user.id, True)
 
     if not leads:
         await message.answer("У вас нет записей!", reply_markup=back_to_menu_kb)

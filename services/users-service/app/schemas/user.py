@@ -11,6 +11,3 @@ class UserCreate(UserBase):
 class UserResponce(UserBase):
     id: int
     auth_id: int
-
-    class Config:
-        from_attributes = True

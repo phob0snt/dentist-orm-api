@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from app.api import leads
 from app.services.lead_rpc import lead_consumer
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     consumer_task = asyncio.create_task(lead_consumer.run())

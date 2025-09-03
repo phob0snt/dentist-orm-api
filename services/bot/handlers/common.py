@@ -51,8 +51,8 @@ async def show_auth_menu(message: Message, error_message: str = None):
 @router.message(Command("main"))
 @require_auth(redirect_to_auth=True)
 async def show_main_page(message: Message):
-    user_data: UserData = await get_user_data_cached(message.from_user.id)
-    leads = await get_leads_cached(message.from_user.id)
+    user_data: UserData = await get_user_data_cached(message.from_user.id, True)
+    leads = await get_leads_cached(message.from_user.id, True)
     leads_count = len(leads) if leads else 0
 
     await message.answer(

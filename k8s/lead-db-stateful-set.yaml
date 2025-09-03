@@ -1,31 +1,23 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  annotations:
-    kompose.cmd: D:\!Software\K8s\kompose.exe convert -f ..\docker-compose.yml
-    kompose.version: 1.37.0 (fb0539e64)
   labels:
-    io.kompose.service: auth-db
-  name: auth-db
+    io.kompose.service: lead-db
+  name: lead-db
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: auth-db
-  strategy:
-    type: Recreate
+      io.kompose.service: lead-db
   template:
     metadata:
-      annotations:
-        kompose.cmd: D:\!Software\K8s\kompose.exe convert -f ..\docker-compose.yml
-        kompose.version: 1.37.0 (fb0539e64)
       labels:
-        io.kompose.service: auth-db
+        io.kompose.service: lead-db
     spec:
       containers:
         - env:
             - name: POSTGRES_DB
-              value: dentistAuth
+              value: dentistLeads
             - name: POSTGRES_PASSWORD
               value: x2ketarol
             - name: POSTGRES_USER
@@ -33,21 +25,20 @@ spec:
           image: postgres:17
           livenessProbe:
             exec:
-              command:
-                - pg_isready -U postgres -d dentistAuth
+              command: ["pg_isready", "-U", "postgres"]
             failureThreshold: 5
             initialDelaySeconds: 30
             periodSeconds: 10
             timeoutSeconds: 5
-          name: auth-db
+          name: lead-db
           ports:
             - containerPort: 5432
               protocol: TCP
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: auth-db-claim0
+              name: lead-db-claim0
       restartPolicy: Always
       volumes:
-        - name: auth-db-claim0
+        - name: lead-db-claim0
           persistentVolumeClaim:
-            claimName: auth-db-claim0
+            claimName: lead-db-claim0

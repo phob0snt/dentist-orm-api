@@ -89,6 +89,9 @@ class LeadRpc:
                 db=db
             )
 
+            if not result:
+                return []
+            
             responce = Lead.model_validate(result)
 
             return responce.model_dump()

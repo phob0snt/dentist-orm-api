@@ -18,7 +18,7 @@ def get_lead_by_id(lead_id: int, db: Session) -> LeadORM | None:
     return db.query(LeadORM).filter(LeadORM.id == lead_id).first()
 
 def get_leads_by_user_id(user_id: int, db: Session) -> list[LeadORM] | None:
-    return db.query(LeadORM).filter(LeadORM.user_id == user_id)
+    return db.query(LeadORM).filter(LeadORM.user_id == user_id).all()
 
 def update_lead(lead: LeadORM, lead_update: LeadUpdate, db: Session):
     data = lead_update.model_dump(exclude_unset=True)

@@ -5,7 +5,6 @@ import aio_pika
 from app.config import RabbitMQConfig
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 class NotificaionProducer:
     def __init__(self, config: RabbitMQConfig):

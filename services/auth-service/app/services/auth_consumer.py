@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import sys
 from dotenv import load_dotenv
 from typing import Any, Dict
 import aio_pika
@@ -11,6 +12,7 @@ from .auth import authenticate_user, refresh_token_pair, register_user_with_logi
 from app.db.session import SessionLocal
 
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class AuthConsumer:
     def __init__(self, amqp_url: str):
@@ -19,27 +21,36 @@ class AuthConsumer:
         self.channel = None
         self.rpc: RPC = None
     
-    async def connect(self):
-        try:
-            self.connection = await aio_pika.connect_robust(self.amqp_url)
-            self.channel = await self.connection.channel()
-            self.rpc = await RPC.create(self.channel)
+    async def connect(self, retries: int = 3):
+        for attempt in range(retries):
+            try:
+                self.connection = await aio_pika.connect_robust(self.amqp_url)
+                self.channel = await self.connection.channel()
+                self.rpc = await RPC.create(self.channel)
 
-            await self.rpc.register("auth.register_user", self.handle_register, auto_delete=True)
-            await self.rpc.register("auth.login", self.handle_login, auto_delete=True)
-            await self.rpc.register("auth.refresh", self.handle_refresh, auto_delete=True)
+                await self.rpc.register("auth.register_user", self.handle_register, auto_delete=True)
+                await self.rpc.register("auth.login", self.handle_login, auto_delete=True)
+                await self.rpc.register("auth.refresh", self.handle_refresh, auto_delete=True)
 
-            logger.info("Auth RPC Consumer подключен")
+                logger.info("Auth RPC Consumer подключен")
 
-        except Exception as e:
-            logger.error(f"Ошибка подключения к RabbitMQ: {e}")
-            raise
+            except Exception as e:
+                logger.error(f"Ошибка подключения к RabbitMQ: {e}")
+
+                if attempt < retries - 1:
+                    delay = 5
+                    logger.info(f"Попытка переподключения через {delay} секунд. Осталось попыток: {retries - attempt - 1}")
+                    await asyncio.sleep(delay)
+                else:
+                    logger.error(f"Невозможно подключиться к RabbitMQ: {e}. Остановка сервиса.")
+                    sys.exit(1)
+                raise
 
     async def handle_register(self, **kwargs) -> Dict[str, Any]:
         db = SessionLocal()
 
         try:
-            logger.info(f"получены данные: {kwargs}")
+            logger.error(f"получены данные: {kwargs}")
             request = AccountCreate.model_validate(kwargs.get("data"))
 
             result = register_user_with_login(
@@ -63,11 +74,11 @@ class AuthConsumer:
             }
         
         except ValueError as e:
-            error = f"Ошибка валидации данных: {str(e)}"
+            error = f"Ошибка валидации данных: {e}"
             logger.error(error)
             return {"error": error}
         except Exception as e:
-            error = f"Ошибка регистрации: {str(e)}"
+            error = f"Ошибка регистрации: {e}"
             logger.error(error)
             return {"error": error}
         finally:
@@ -146,7 +157,7 @@ class AuthConsumer:
             logger.info("Auth consumer отключен")
 
     async def run(self):
-        await self.connect()
+        await self.connect(3)
 
         try:
             await asyncio.Future()

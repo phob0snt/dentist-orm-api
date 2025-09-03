@@ -1,23 +1,35 @@
+import logging
 from pydantic import TypeAdapter
 from schemas.lead import LeadCreate, LeadResponce
 from services.auth_rpc import get_access_token
 from utils.exceptions import TokenNotFoundError
 from services.rpc_client import rpc_client
 
+logger = logging.getLogger(__name__)
 
 async def create_lead(tg_id: int, data: LeadCreate) -> bool:
-    responce = await rpc_client.call_lead_service(
-        method="create",
-        data={
-            "data": data.model_dump()
-        }
-    )
+    try:
+        token = await get_access_token(tg_id)
+        responce = await rpc_client.call_lead_service(
+            method="create",
+            data={
+                "data": data.model_dump(),
+                "token": token
+            }
+        )
 
-    if responce.get("id"):
-        await get_leads(tg_id)
-        return True
-    
-    return False
+        if responce.get("id"):
+            await get_leads(tg_id)
+            return True
+        
+        if responce.get("error"):
+            logger.error(f"Ошибка при создании записи: {responce.get('error')}")
+            return False
+        
+        return False
+    except Exception as e:
+        logger.error(f"Ошибка при создании записи: {e}")
+        return False
 
 async def get_leads(tg_id: int) -> list[LeadResponce] | None:
     try:
@@ -37,7 +49,11 @@ async def get_leads(tg_id: int) -> list[LeadResponce] | None:
         )
 
         if not responce:
-            return
+            return None
+        
+        if responce.get("error"):
+            logger.error(f"Ошибка Lead Service: {responce.get('error')}")
+            return None
         
         adapter = TypeAdapter(list[LeadResponce])
         leads: list[LeadResponce] = adapter.validate_python(responce)
@@ -46,5 +62,6 @@ async def get_leads(tg_id: int) -> list[LeadResponce] | None:
         await cache_leads(tg_id, leads)
 
         return leads
-    except TokenNotFoundError:
+    except Exception as e:
+        logger.error(f"Ошибка получения записей: {e}")
         raise
