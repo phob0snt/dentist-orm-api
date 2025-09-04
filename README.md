@@ -17,6 +17,7 @@ A comprehensive Customer Relationship Management API designed specifically for d
 
 - Python 3.8+
 - PostgreSQL or MySQL database
+- Docker
 - Git
 
 ### Installation
@@ -26,44 +27,12 @@ A comprehensive Customer Relationship Management API designed specifically for d
    git clone https://github.com/phob0snt/dentist-CRM-API.git
    cd dentist-CRM-API
    ```
-
-2. **Create virtual environment**
+2. **Configure .env file**
+   
+3. **Run docker-compose**
    ```bash
-   python -m venv venv
-   venv\Scripts\activate  # Windows
-   # source venv/bin/activate  # Linux/Mac
+   docker-compose up --build
    ```
-
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-4. **Environment setup**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your database credentials
-   ```
-
-5. **Initialize database**
-   ```bash
-   python init_db.py
-   ```
-
-6. **Run the application**
-   ```bash
-   uvicorn app.main:app --reload
-   ```
-
-## 🔧 Configuration
-
-Create a `.env` file in the root directory:
-
-```env
-DATABASE_URL=postgresql://username:password@localhost/db_name
-# or for MySQL:
-# DATABASE_URL=mysql+pymysql://username:password@localhost/db_name
-```
 
 ## 📚 API Documentation
 
@@ -72,17 +41,6 @@ Once the server is running, visit:
 - **ReDoc**: `http://localhost:8000/redoc`
 
 ## 🛠 Development
-
-### Running Tests
-```bash
-pytest
-```
-
-### Code Formatting
-```bash
-black .
-flake8 .
-```
 
 ### Database Migrations
 ```bash
